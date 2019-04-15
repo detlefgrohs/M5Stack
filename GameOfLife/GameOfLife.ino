@@ -1,4 +1,5 @@
-#include <M5Stack.h>
+//#include <M5Stack.h>
+#include <M5ez.h>
 
 enum Generation { Past = 0, Present = 1, Future = 2 };
 enum Screen { Menu, Main };
@@ -26,7 +27,9 @@ int ArraySizeX;
 int ArraySizeY;
 
 void setup()   {
-  M5.begin();
+  ez.begin();
+  //M5.begin();
+  
   SetCellSize(Two);
   ChangeScreen(Menu);
 }
@@ -67,65 +70,56 @@ void SetupMenuScreen() {
 }
 
 void ShowMenu() {
-  M5.Lcd.fillScreen(TFT_BLACK);
-  
-  M5.Lcd.setTextSize(2);
-  M5.Lcd.setCursor(0, 0);
-
-  M5.Lcd.setTextColor(TFT_YELLOW);
-  M5.Lcd.printf("The Game of Life:\n\n");
-  M5.Lcd.setTextColor(TFT_BLUE); 
-  M5.Lcd.printf("Cell Size: %d\n", CellSize);
-  M5.Lcd.printf("GridSizeX: %d\n", GridSizeX);
-  M5.Lcd.printf("GridSizeY: %d\n", GridSizeY);
-  
-  M5.Lcd.setTextColor(TFT_GREEN);
-  M5.Lcd.setCursor(0, 140);
-  M5.Lcd.println("Press A - Dec Cell Size");
-  M5.Lcd.println("Press B - Inc Cell Size");
-  M5.Lcd.println("Press C - Start");
+  ezMenu mainmenu("The Game of Life");
+  mainmenu.txtSmall();
+  mainmenu.addItem("Cell Size = 1", cell_size_one);
+  mainmenu.addItem("Cell Size = 2", cell_size_two);
+  mainmenu.addItem("Cell Size = 4", cell_size_four);
+  mainmenu.addItem("Cell Size = 8", cell_size_eight);
+  mainmenu.addItem("Cell Size = 16", cell_size_sixteen);
+  mainmenu.upOnFirst("last|up");
+  mainmenu.downOnLast("first|down");
+  mainmenu.runOnce();
 }
 
-void MenuScreen() {
-  if (M5.BtnA.wasPressed()) {
-    DecrementCellSize();
-    ShowMenu();
-  }
-  if (M5.BtnB.wasPressed()) {
-    IncrementCellSize();
-    ShowMenu();
-  }
-  if (M5.BtnC.wasPressed()) {
-    ChangeScreen(Main);
-  }
+void cell_size_one() {
+  SetCellSize(One);
+  ChangeScreen(Main);
 }
 
-void DecrementCellSize() {
-  switch(CellSize) {
-    case One:     SetCellSize(Sixteen); break;
-    case Two:     SetCellSize(One); break;
-    case Four:    SetCellSize(Two); break;
-    case Eight:   SetCellSize(Four); break;
-    case Sixteen: SetCellSize(Eight); break;
-  }
+void cell_size_two() {
+  SetCellSize(Two);
+  ChangeScreen(Main);
 }
 
-void IncrementCellSize() {
-  switch(CellSize) {
-    case One:     SetCellSize(Two); break;
-    case Two:     SetCellSize(Four); break;
-    case Four:    SetCellSize(Eight); break;
-    case Eight:   SetCellSize(Sixteen); break;
-    case Sixteen: SetCellSize(One); break;
-  }
+void cell_size_four() {
+  SetCellSize(Four);
+  ChangeScreen(Main);
+}
+
+void cell_size_eight() {
+  SetCellSize(Eight);
+  ChangeScreen(Main);
+}
+
+void cell_size_sixteen() {
+  SetCellSize(Sixteen);
+  ChangeScreen(Main);
+}
+
+void MenuScreen() {  
 }
 
 void SetupMainScreen() {
+  //M5.begin();
   CreateRandomCurrentGeneration();
+
+  ez.canvas.
+  ez.canvas.clear();
 
   M5.Lcd.fillScreen(TFT_BLACK);
   
-  M5.Lcd.setTextSize(1);
+  M5.Lcd.setTextSize(0);
   M5.Lcd.setTextColor(TFT_WHITE);
   M5.Lcd.setCursor(220, 230);
   M5.Lcd.printf("Step Pause Reset");
@@ -165,7 +159,8 @@ void MainScreen() {
     if ((last_NumberOfDeaths == NumberOfDeaths) && (last_NumberOfBirths == NumberOfBirths)) status = "stable";
 
     float fps = 1000.0 / (millis() - start_millis);
-
+  
+    M5.Lcd.setTextSize(0);
     M5.Lcd.fillRect(0, 230, 220, 10, TFT_BLACK);
     M5.Lcd.setCursor(0, 230);
     M5.Lcd.printf("G%04d F%3.1f S%04d D%03d B%03d %s", GenerationNumber, fps, NumberOfSurvivors, NumberOfDeaths, NumberOfBirths, status.c_str());
